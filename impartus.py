@@ -1,8 +1,18 @@
 import requests
+import time
 
 #User Details
-mail = input("Enter your bits mail address: ")
-password = input("Enter your impartus password: ")
+def credentials():
+    with open("creds.txt", 'r') as file:
+        mail = file.readline()
+        password = file.readline()
+        if mail == "f20xxxxxx@hyderabad.bits-pilani.ac.in" or password == "password":
+            print('Please enter your impartus credentials in cred.txt' )
+            return mail,password
+        else:
+            pass
+
+mail, password = credentials()
 #Getting bearer token
 url_token = "http://a.impartus.com/api/auth/signin"
 payload = {'username' : f"{mail}", 'password' : f"{password}" }
@@ -72,14 +82,3 @@ for n in range(x,y+1):
         f.write(response.content)
         print(f"Lecture {n} downloaded")
         n = n + 1
-
-
-
-
-
-
-
-
-
-
-
