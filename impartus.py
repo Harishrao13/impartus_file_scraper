@@ -1,16 +1,18 @@
 import requests
-import time
+import sys
+import getpass
 
 #User Details
 def credentials():
     with open("creds.txt", 'r') as file:
-        mail = file.readline()
-        password = file.readline()
+        mail = file.readline().strip(" ")
+        password = file.readline().strip(" ")
         if mail == "f20xxxxxx@hyderabad.bits-pilani.ac.in" or password == "password":
             print('Please enter your impartus credentials in cred.txt' )
-            return mail,password
+            sys.exit()
         else:
-            pass
+            return mail, password
+    file.close()
 
 mail, password = credentials()
 #Getting bearer token
@@ -73,12 +75,21 @@ def lecture_range():
 
 x, y = lecture_range()
 
+#Creating a folder
+path = f"C:\\Users\\{getpass.getuser()}\\Downloads\\{subject_name[subject_number-1]} Lecture Slides"
+import os
+try:
+    os.mkdir(path)
+except FileExistsError:
+    pass
+
 #scraping pdfs
 n = x
 for n in range(x,y+1):
     url_pdf = f'http://a.impartus.com/api/videos/{video_id[n-1]}/auto-generated-pdf'
     response = requests.request("GET", url_pdf, headers=headers)
-    with open(f"{subject_name[subject_number-1]} Lecture {n}.pdf", "wb") as f:
+    with open(f"C:\\Users\\{getpass.getuser()}\\Downloads\\{subject_name[subject_number-1]} Lecture Slides\\{subject_name[subject_number-1]} Lecture {n}.pdf", "wb") as f:
         f.write(response.content)
         print(f"Lecture {n} downloaded")
+        print("Find your pdfs in your downloads folder")
         n = n + 1
