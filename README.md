@@ -24,20 +24,3 @@ For Windows
   #Run Script
   python3 impartus.py
 ```
-    
-For Linux
-```bash
-# setup virtualenv (optional)
-$ virtualenv venv
-$ source venv/bin/activate 
-
-# Clone repository
-$ git clone https://github.com/Harishrao13/impartus_file_scraper/
-$ cd impartus_file_scraper
-
-# install dependencies
-$ pip3 install -r requirements.txt
-
-# Run Script
-$ python3 impartus.py
-```
