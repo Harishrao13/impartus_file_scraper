@@ -3,28 +3,43 @@ import sys
 import getpass
 
 #User Details
+mail = ""
+password = ""
 def credentials():
     with open("creds.txt", 'r') as file:
         mail = file.readline().strip(" ")
         password = file.readline().strip(" ")
         if mail == "f20xxxxxx@hyderabad.bits-pilani.ac.in" or password == "password":
-            print('Please enter your impartus credentials in cred.txt' )
-            sys.exit()
+            print('Impartus credentials not found in creds.txt' )
+            cred_mail=input("Please enter your mail address: ")
+            cred_password=input("Please enter your Impartus password: ")
+            with open("creds.txt", "w") as file1:
+                file1.write(f"{cred_mail}\n")
+                file1.write(cred_password)
+                cred_mail = mail
+                cred_password = password
+                return mail, password
         else:
             return mail, password
     file.close()
 
 mail, password = credentials()
+payload = {'username': f"{mail}", 'password': f"{password}"} #common for all operations
 #Getting bearer token
-url_token = "http://a.impartus.com/api/auth/signin"
-payload = {'username' : f"{mail}", 'password' : f"{password}" }
-headers_token = {
-'Accept' : 'application/json'
-}
-post = requests.request("POST", url_token, headers=headers_token, data=payload)
-post_token = post.json()
-token = post_token['token'] #bearer/auth token
-
+def capture_token():
+    try:
+        url_token = "http://a.impartus.com/api/auth/signin"
+        headers_token = {
+        'Accept' : 'application/json'
+        }
+        post = requests.request("POST", url_token, headers=headers_token, data=payload)
+        post_token = post.json()
+        token = post_token['token'] #bearer/auth token
+        return token
+    except KeyError:
+        print("Invalid impartus credentials.")
+        sys.exit()
+token = capture_token()
 #Selecting Subject
 url_subjects = "http://a.impartus.com/api/subjects" #api for list of subjects
 url_name = "https://a.impartus.com/api/user/profile" #url for name of user
@@ -35,7 +50,7 @@ headers = {
 #Scraping name of user
 req_name = requests.request("GET", url_name, headers=headers, data=payload)
 request_name = req_name.json()
-print("Hello " + request_name['originalname'] + ",")
+print("Hello " + request_name['originalname'])
 
 #Scraping list of subjects enrolled
 req = requests.request("GET", url_subjects, headers=headers, data=payload)
@@ -59,10 +74,12 @@ print(f'Lectures detected: {lecture_count}')
 
 #scraping video ids for selected subjects
 video_id = []
+slides_count = []
 for id in request_lecture:
     video_id.append(id['videoId'])
+    slides_count.append(id["slideCount"])
 video_id.reverse()
-
+slides_count.reverse()
 #Range of lectures to be scraped
 def lecture_range():
     while True:
@@ -86,10 +103,13 @@ except FileExistsError:
 #scraping pdfs
 n = x
 for n in range(x,y+1):
-    url_pdf = f'http://a.impartus.com/api/videos/{video_id[n-1]}/auto-generated-pdf'
-    response = requests.request("GET", url_pdf, headers=headers)
-    with open(f"C:\\Users\\{getpass.getuser()}\\Downloads\\{subject_name[subject_number-1]} Lecture Slides\\{subject_name[subject_number-1]} Lecture {n}.pdf", "wb") as f:
-        f.write(response.content)
-        print(f"Lecture {n} downloaded")
-        print("Find your pdfs in your downloads folder")
-        n = n + 1
+    if slides_count[n-1] != 0:
+        url_pdf = f'http://a.impartus.com/api/videos/{video_id[n-1]}/auto-generated-pdf'
+        response = requests.request("GET", url_pdf, headers=headers)
+        with open(f"C:\\Users\\{getpass.getuser()}\\Downloads\\{subject_name[subject_number-1]} Lecture Slides\\{subject_name[subject_number-1]} Lecture {n}.pdf", "wb") as f:
+            f.write(response.content)
+            print(f"Lecture {n} downloaded")
+            n = n + 1
+    else:
+        print(f'Lecture {n} is not a class.')
+print("Find your pdfs in your downloads folder")
