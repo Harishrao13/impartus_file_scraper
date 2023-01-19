@@ -3,10 +3,6 @@
 
 Python script to scrape auto-generated lecture slides from impartus
 
-Need to add couples of things(enhancements)
-
-1.Avoid non-lectures(creates a empty pdf file when not found)
-
 ## Installation
 
 For Windows
