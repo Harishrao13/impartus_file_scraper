@@ -2,45 +2,28 @@ import requests
 import sys
 import getpass
 
-#User Credentials
-mail = ""
-password = ""
-
+#User Details
 def credentials():
-    with open("creds.txt", 'a+') as file:
+    with open("creds.txt", 'r') as file:
         mail = file.readline().strip(" ")
         password = file.readline().strip(" ")
         if mail == "f20xxxxxx@hyderabad.bits-pilani.ac.in" or password == "password":
-            print('Impartus credentials not found in creds.txt' )
-            cred_mail=input("Please enter your mail address: ")
-            cred_password=input("Please enter your Impartus password: ")
-            file.write(f"{cred_mail}\n")
-            file.write(cred_password)
-            cred_mail = mail
-            cred_password = password
-            return mail, password
+            print('Please enter your impartus credentials in cred.txt' )
+            sys.exit()
         else:
             return mail, password
     file.close()
 
 mail, password = credentials()
-payload = {'username': f"{mail}", 'password': f"{password}"} #common payload for all operations
-
 #Getting bearer token
-def capture_token():
-    try:
-        url_token = "http://a.impartus.com/api/auth/signin"
-        headers_token = {
-        'Accept' : 'application/json'
-        }
-        post = requests.request("POST", url_token, headers=headers_token, data=payload)
-        post_token = post.json()
-        token = post_token['token'] #bearer/auth token
-        return token
-    except KeyError:
-        print("Invalid Impartus credentials.")
-        sys.exit()
-token = capture_token()
+url_token = "http://a.impartus.com/api/auth/signin"
+payload = {'username' : f"{mail}", 'password' : f"{password}" }
+headers_token = {
+'Accept' : 'application/json'
+}
+post = requests.request("POST", url_token, headers=headers_token, data=payload)
+post_token = post.json()
+token = post_token['token'] #bearer/auth token
 
 #Selecting Subject
 url_subjects = "http://a.impartus.com/api/subjects" #api for list of subjects
@@ -52,9 +35,9 @@ headers = {
 #Scraping name of user
 req_name = requests.request("GET", url_name, headers=headers, data=payload)
 request_name = req_name.json()
-print("Hello " + request_name['originalname'])
+print("Hello " + request_name['originalname'] + ",")
 
-#Scraping list of subjects user enrolled
+#Scraping list of subjects enrolled
 req = requests.request("GET", url_subjects, headers=headers, data=payload)
 request = req.json()
 i = 1
@@ -67,21 +50,19 @@ for item in request:
     subject_name.append(item['subjectName'])
 subject_number = int(input("Enter the number of the subject: "))
 
-#Total lectures count in the subject
+#Total lectures count
 url_lecture = f"http://a.impartus.com/api/subjects/{subject_id[subject_number-1]}/lectures/1249"
 req_lecture = requests.request("GET", url_lecture, headers=headers, data=payload)
 request_lecture = req_lecture.json()
 lecture_count = int(request_lecture[0]['seqNo'])
 print(f'Lectures detected: {lecture_count}')
 
-#scraping video ids for selected subject
+#scraping video ids for selected subjects
 video_id = []
-slides_count = []
 for id in request_lecture:
-    video_id.append(id['videoId']) #For scraping videos
-    slides_count.append(id["slideCount"]) #For detecting non-lectures
+    video_id.append(id['videoId'])
 video_id.reverse()
-slides_count.reverse() 
+
 #Range of lectures to be scraped
 def lecture_range():
     while True:
@@ -94,7 +75,7 @@ def lecture_range():
 
 x, y = lecture_range()
 
-#Creating a folder to save files
+#Creating a folder
 path = f"C:\\Users\\{getpass.getuser()}\\Downloads\\{subject_name[subject_number-1]} Lecture Slides"
 import os
 try:
@@ -105,13 +86,11 @@ except FileExistsError:
 #scraping pdfs
 n = x
 for n in range(x,y+1):
-    if slides_count[n-1] != 0:
-        url_pdf = f'http://a.impartus.com/api/videos/{video_id[n-1]}/auto-generated-pdf'
-        response = requests.request("GET", url_pdf, headers=headers)
-        with open(f"C:\\Users\\{getpass.getuser()}\\Downloads\\{subject_name[subject_number-1]} Lecture Slides\\{subject_name[subject_number-1]} Lecture {n}.pdf", "wb") as f:
-            f.write(response.content)
-            print(f"Lecture {n} downloaded")
-            n = n + 1
-    else:
-        print(f'Lecture {n} is not a class.')
+    url_pdf = f'http://a.impartus.com/api/videos/{video_id[n-1]}/auto-generated-pdf'
+    response = requests.request("GET", url_pdf, headers=headers)
+    with open(f"C:\\Users\\{getpass.getuser()}\\Downloads\\{subject_name[subject_number-1]} Lecture Slides\\{subject_name[subject_number-1]} Lecture {n}.pdf", "wb") as f:
+        f.write(response.content)
+        print(f"Lecture {n} downloaded")
+        n = n + 1
+
 print("Find your pdfs in your downloads folder")
