@@ -18,5 +18,5 @@ For Windows
   pip3 install -r requirements.txt
 
   #Run Script
-  python3 impartus.py
+  python impartus.py
 ```
