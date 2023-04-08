@@ -51,7 +51,7 @@ for item in request:
 subject_number = int(input("Enter the number of the subject: "))
 
 #Total lectures count
-url_lecture = f"http://a.impartus.com/api/subjects/{subject_id[subject_number-1]}/lectures/1249"
+url_lecture = f"http://a.impartus.com/api/subjects/{subject_id[subject_number-1]}/lectures/1275"
 req_lecture = requests.request("GET", url_lecture, headers=headers, data=payload)
 request_lecture = req_lecture.json()
 lecture_count = int(request_lecture[0]['seqNo'])
